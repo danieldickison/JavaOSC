@@ -37,7 +37,7 @@ public class OSCPort {
 
 		this.local = local;
 		this.remote = remote;
-		final DatagramChannel tmpChannel;
+		DatagramChannel tmpChannel;
 		if (local instanceof InetSocketAddress) {
 			final InetSocketAddress localIsa = (InetSocketAddress) local;
 			final InetSocketAddress remoteIsa = (InetSocketAddress) remote;
@@ -49,7 +49,8 @@ public class OSCPort {
 						+ " (IP v4 vs v6)");
 			}
 
-			if (getClassLoader().findClass("java.net.StandardProtocolFamily")) {
+			try {
+				Class.forName("java.net.StandardProtocolFamily");
 				if (localIsa.getAddress() instanceof Inet4Address) {
 					tmpChannel = DatagramChannel.open(StandardProtocolFamily.INET);
 				} else if (localIsa.getAddress() instanceof Inet6Address) {
@@ -59,7 +60,7 @@ public class OSCPort {
 							"Unknown address type: "
 									+ localIsa.getAddress().getClass().getCanonicalName());
 				}
-			} else {
+			} catch (ClassNotFoundException e) {
 				tmpChannel = DatagramChannel.open();
 			}
 		} else {
@@ -67,9 +68,11 @@ public class OSCPort {
 		}
 		this.channel = tmpChannel;
 
-		if (getClassLoader().findClass("java.net.StandardSocketOptions")) {
+		try {
+			Class.forName("java.net.StandardSocketOptions");
 			this.channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-		}
+		} catch (ClassNotFoundException e) {}
+
 		this.channel.socket().bind(local);
 	}
 
