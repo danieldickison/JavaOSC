@@ -63,12 +63,13 @@ public class OSCPortTest {
 	private OSCPacketListener listener;
 
 	private static boolean supportsIPv6() throws SocketException {
-		return Stream.of(NetworkInterface.getNetworkInterfaces().nextElement())
-				.map(NetworkInterface::getInterfaceAddresses)
-				.flatMap(Collection::stream)
-				.map(InterfaceAddress::getAddress)
-				.anyMatch(((Predicate<InetAddress>) InetAddress::isLoopbackAddress).negate().and(address -> address instanceof Inet6Address));
-
+		for (InterfaceAddress interfaceAddr : NetworkInterface.getNetworkInterfaces().nextElement().getInterfaceAddresses()) {
+			InetAddress inetAddr = interfaceAddr.getAddress();
+			if (!inetAddr.isLoopbackAddress() && inetAddr instanceof Inet6Address) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void reSetUp(
