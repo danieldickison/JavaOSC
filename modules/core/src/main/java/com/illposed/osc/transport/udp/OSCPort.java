@@ -48,21 +48,28 @@ public class OSCPort {
 						"local and remote addresses are not of the same family"
 						+ " (IP v4 vs v6)");
 			}
-			if (localIsa.getAddress() instanceof Inet4Address) {
-				tmpChannel = DatagramChannel.open(StandardProtocolFamily.INET);
-			} else if (localIsa.getAddress() instanceof Inet6Address) {
-				tmpChannel = DatagramChannel.open(StandardProtocolFamily.INET6);
+
+			if (getClassLoader().findClass("java.net.StandardProtocolFamily")) {
+				if (localIsa.getAddress() instanceof Inet4Address) {
+					tmpChannel = DatagramChannel.open(StandardProtocolFamily.INET);
+				} else if (localIsa.getAddress() instanceof Inet6Address) {
+					tmpChannel = DatagramChannel.open(StandardProtocolFamily.INET6);
+				} else {
+					throw new IllegalArgumentException(
+							"Unknown address type: "
+									+ localIsa.getAddress().getClass().getCanonicalName());
+				}
 			} else {
-				throw new IllegalArgumentException(
-						"Unknown address type: "
-						+ localIsa.getAddress().getClass().getCanonicalName());
+				tmpChannel = DatagramChannel.open();
 			}
 		} else {
 			tmpChannel = DatagramChannel.open();
 		}
 		this.channel = tmpChannel;
 
-		this.channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+		if (getClassLoader().findClass("java.net.StandardSocketOptions")) {
+			this.channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+		}
 		this.channel.socket().bind(local);
 	}
 
