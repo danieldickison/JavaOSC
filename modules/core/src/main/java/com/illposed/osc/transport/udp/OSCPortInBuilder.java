@@ -117,8 +117,11 @@ public class OSCPortInBuilder {
 	public OSCPortInBuilder addMessageListener(
 		final MessageSelector selector, final OSCMessageListener listener)
 	{
-		OSCPacketDispatcher dispatcher = OSCPortIn.getDispatcher(packetListeners);
+		if (packetListeners == null) {
+			packetListeners = new ArrayList<>();
+		}
 
+		OSCPacketDispatcher dispatcher = OSCPortIn.getDispatcher(packetListeners);
 		if (dispatcher == null) {
 			dispatcher = (OSCPacketDispatcher)addDefaultPacketListener();
 		}
