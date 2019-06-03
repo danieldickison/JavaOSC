@@ -8,6 +8,7 @@
 
 package com.illposed.osc;
 
+import com.illposed.osc.argument.ArgumentHandler;
 import com.illposed.osc.argument.OSCTimeTag64;
 import com.illposed.osc.argument.handler.StringArgumentHandler;
 import java.nio.ByteBuffer;
@@ -106,8 +107,8 @@ public class OSCPacketDispatcher implements OSCPacketListener {
 
 		NullOSCSerializer() {
 			super(
-					Collections.emptyList(),
-					Collections.emptyMap(),
+					Collections.<ArgumentHandler>emptyList(),
+					Collections.<String, Object>emptyMap(),
 					null);
 		}
 
@@ -236,8 +237,14 @@ public class OSCPacketDispatcher implements OSCPacketListener {
 		selectiveMessageListeners.remove(new SelectiveMessageListener(messageSelector, listener));
 		if (metaInfoRequired) {
 			// re-evaluate whether meta info is still required
-			metaInfoRequired = selectiveMessageListeners.stream()
-					.anyMatch(selMsgListener -> selMsgListener.getSelector().isInfoRequired());
+			boolean newValue = false;
+			for (SelectiveMessageListener selMsgListener : selectiveMessageListeners) {
+				if (selMsgListener.getSelector().isInfoRequired()) {
+					newValue = true;
+					break;
+				}
+			}
+			metaInfoRequired = newValue;
 		}
 	}
 
