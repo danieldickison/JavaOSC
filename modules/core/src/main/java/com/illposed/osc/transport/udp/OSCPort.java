@@ -71,7 +71,12 @@ public class OSCPort {
 		try {
 			Class.forName("java.net.StandardSocketOptions");
 			this.channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-		} catch (ClassNotFoundException e) {}
+		} catch (ClassNotFoundException e) {
+            this.channel.socket().setReuseAddress(true);
+            if (!this.channel.socket().getReuseAddress()) {
+                throw new RuntimeException("unable to enable SO_REUSE_ADDR");
+            }
+        }
 
 		this.channel.socket().bind(local);
 	}
